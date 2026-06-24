@@ -1,8 +1,11 @@
-/** Sessão simples do operador do posto (localStorage). Sem token/offline. */
+/** Sessão do operador do posto (localStorage). */
 
 export interface Sessao {
   usuario: string;
   nome: string;
+  postoId?: string;
+  prefeituraId?: string;
+  token?: string;
 }
 
 const KEY = "fleetfuel_posto_sessao";
@@ -24,6 +27,10 @@ export function getSessao(): Sessao | null {
   } catch {
     return null;
   }
+}
+
+export function getToken(): string | null {
+  return getSessao()?.token ?? null;
 }
 
 export function limparSessao(): void {

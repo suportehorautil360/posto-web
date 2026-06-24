@@ -36,7 +36,7 @@ export function AppHeader() {
             className="ml-1 gap-1 border-warning/40 text-warning"
             aria-label={`Ambiente: ${environmentLabel()}`}
           >
-            <AlertTriangle className="size-3" aria-hidden /> DEMO
+            <AlertTriangle className="size-3" aria-hidden /> {environmentLabel().toUpperCase()}
           </Badge>
         ) : null}
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Fuel, KeyRound } from "lucide-react";
+import { Fuel } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -9,8 +9,8 @@ import { useSession } from "@/components/providers/session-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { DEMO_OPERADOR } from "@/features/auth/demo";
-import { validarLoginDemo } from "@/features/auth/login";
+import { login } from "@/features/auth/api";
+import { environmentLabel } from "@/lib/config/env";
 
 export function LoginScreen() {
   const router = useRouter();
@@ -25,20 +25,24 @@ export function LoginScreen() {
   }, [hydrated, operador, router]);
   if (!hydrated || operador) return null;
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setErro("");
     setVerificando(true);
-    // pequeno atraso só para o estado "verificando" aparecer
-    setTimeout(() => {
-      if (validarLoginDemo(usuario, senha)) {
-        entrar({ usuario: usuario.trim(), nome: DEMO_OPERADOR.nome });
-        router.replace("/home");
-      } else {
-        setErro("Usuário ou senha inválidos.");
-        setVerificando(false);
-      }
-    }, 250);
+    try {
+      const { token, user } = await login(usuario, senha);
+      entrar({
+        usuario: user.usuario,
+        nome: user.nome,
+        postoId: user.postoId,
+        prefeituraId: user.prefeituraId,
+        token,
+      });
+      router.replace("/home");
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Não foi possível entrar.");
+      setVerificando(false);
+    }
   }
 
   return (
@@ -112,16 +116,8 @@ export function LoginScreen() {
           </Button>
         </form>
 
-        <div className="mt-5 flex w-full max-w-sm items-center gap-2 rounded-xl border border-brand/30 bg-brand/10 px-4 py-3 text-sm text-brand">
-          <KeyRound className="size-4 shrink-0" aria-hidden />
-          <span>
-            Login demo: usuário <strong>{DEMO_OPERADOR.usuario}</strong> · senha{" "}
-            <strong>{DEMO_OPERADOR.senha}</strong>
-          </span>
-        </div>
-
         <p className="mt-6 text-center text-xs text-muted-foreground/70">
-          v2.2 · Modo demonstração — sem Firebase
+          v2.2 · {environmentLabel()}
         </p>
       </main>
     </div>
