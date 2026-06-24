@@ -27,19 +27,20 @@ pnpm test:e2e   # playwright (e2e; build + start na porta 3412)
 ## Variáveis de ambiente (`.env`)
 
 ```
-NEXT_PUBLIC_API_URL=http://localhost:3000   # base da API NestJS (uso futuro)
-NEXT_PUBLIC_APP_ENV=demo                     # demo | homologacao | producao
+NEXT_PUBLIC_API_URL=http://localhost:3000   # base da API NestJS
+NEXT_PUBLIC_APP_ENV=homologacao              # homologacao | producao
 ```
 
-## Login (modo demo)
+## Login
 
-A tela **"Acesso Restrito"** (`/`) autentica em modo demo:
+A tela **"Acesso Restrito"** (`/`) autentica no backend NestJS via
+`POST /user/auth/login` (mesmo endpoint do 360). Em sucesso, guarda `accessToken` +
+dados do operador na sessão (`localStorage`) e vai para `/home`.
 
-> Usuário **`posto01`** · Senha **`demo1234`**
-
-Em sucesso vai para `/home` (placeholder do operador). O **login real** (operador com
-vínculo `posto`, via backend/Firebase) entra numa próxima etapa — assim como as telas do
-operador (confirmar pagamento do QR).
+Só entra **operador com vínculo `posto`** (`user.vinculo === "posto"`); qualquer outro
+vínculo é recusado com _"Este acesso não é de um posto."_. O acesso de cada posto é
+cadastrado no 360 (tela de detalhes do posto). As demais telas do operador (confirmar
+pagamento do QR) entram numa próxima etapa.
 
 ## Estrutura
 
@@ -47,10 +48,10 @@ operador (confirmar pagamento do QR).
 app/            layout, page (login), home (placeholder), globals.css
 components/
   ui/           base do design system (do comboio)
-  auth/         app-header (marca+DEMO+relógio), login-screen
+  auth/         app-header (marca+ambiente+relógio), login-screen
   providers/    SessionProvider
-features/auth/  demo (credencial), login (validação)
-lib/            session, config/env, utils, design-system
+features/auth/  api (login real via /user/auth/login)
+lib/            api/client, session, config/env, utils, design-system
 e2e/            testes Playwright
 docs/           spec, plano e screenshots
 ```
