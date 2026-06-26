@@ -37,7 +37,34 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   return (await res.json()) as T;
 }
 
+/** POST multipart/form-data (upload de arquivo). Injeta o Bearer; o browser
+ * define o boundary do Content-Type sozinho. */
+async function upload<T>(path: string, form: FormData): Promise<T> {
+  const token = getToken();
+  const res = await fetch(`${API_URL}${path}`, {
+    method: "POST",
+    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    body: form,
+  });
+  if (!res.ok) {
+    let message = `Erro ${res.status}`;
+    try {
+      const data = (await res.json()) as { message?: string | string[] };
+      if (data?.message) {
+        message = Array.isArray(data.message) ? data.message.join(", ") : data.message;
+      }
+    } catch {
+      /* sem corpo JSON */
+    }
+    throw new ApiError(res.status, message);
+  }
+  if (res.status === 204) return undefined as T;
+  return (await res.json()) as T;
+}
+
 export const api = {
   get: <T>(path: string) => request<T>("GET", path),
   post: <T>(path: string, body?: unknown) => request<T>("POST", path, body),
+  patch: <T>(path: string, body?: unknown) => request<T>("PATCH", path, body),
+  upload,
 };
