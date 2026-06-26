@@ -6,6 +6,11 @@ import { useEffect, useState } from "react";
 
 import { AppHeader } from "@/components/auth/app-header";
 import { PainelAbastecimento } from "@/components/fleetfuel/painel-abastecimento";
+import {
+  PainelMensagens,
+  useSuporteResumo,
+} from "@/components/mensagens/painel-mensagens";
+import { PainelNotas } from "@/components/notas/painel-notas";
 import { useSession } from "@/components/providers/session-provider";
 import { Button } from "@/components/ui/button";
 
@@ -21,6 +26,10 @@ export default function HomePage() {
   const router = useRouter();
   const { operador, hydrated, sair } = useSession();
   const [aba, setAba] = useState<Aba>("abastecimento");
+  const { resumo, recarregar: recarregarResumo } = useSuporteResumo(
+    operador?.postoId,
+  );
+  const naoLidas = resumo?.unreadCount ?? 0;
 
   useEffect(() => {
     if (hydrated && !operador) router.replace("/");
@@ -59,6 +68,11 @@ export default function HomePage() {
             aria-current={aba === id ? "page" : undefined}
           >
             <Icon className="size-4" aria-hidden /> {label}
+            {id === "mensagens" && naoLidas > 0 ? (
+              <span className="ml-0.5 flex size-5 items-center justify-center rounded-full bg-brand text-[0.65rem] font-bold text-brand-foreground">
+                {naoLidas > 9 ? "9+" : naoLidas}
+              </span>
+            ) : null}
           </button>
         ))}
       </nav>
@@ -66,6 +80,10 @@ export default function HomePage() {
       <main className="flex-1">
         {aba === "abastecimento" ? (
           <PainelAbastecimento />
+        ) : aba === "notas" ? (
+          <PainelNotas />
+        ) : aba === "mensagens" ? (
+          <PainelMensagens onResumoChange={recarregarResumo} />
         ) : (
           <EmBreve titulo={ABAS.find((a) => a.id === aba)?.label ?? ""} />
         )}
