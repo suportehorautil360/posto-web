@@ -1,15 +1,26 @@
 "use client";
 
+import { FileText, Fuel, LogOut, MessageSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { AppHeader } from "@/components/auth/app-header";
+import { PainelAbastecimento } from "@/components/fleetfuel/painel-abastecimento";
 import { useSession } from "@/components/providers/session-provider";
 import { Button } from "@/components/ui/button";
+
+type Aba = "abastecimento" | "notas" | "mensagens";
+
+const ABAS: { id: Aba; label: string; icon: typeof Fuel }[] = [
+  { id: "abastecimento", label: "Abastecimento", icon: Fuel },
+  { id: "notas", label: "Notas Fiscais", icon: FileText },
+  { id: "mensagens", label: "Mensagens", icon: MessageSquare },
+];
 
 export default function HomePage() {
   const router = useRouter();
   const { operador, hydrated, sair } = useSession();
+  const [aba, setAba] = useState<Aba>("abastecimento");
 
   useEffect(() => {
     if (hydrated && !operador) router.replace("/");
@@ -19,26 +30,55 @@ export default function HomePage() {
   return (
     <div className="flex min-h-svh flex-col bg-background">
       <AppHeader />
-      <main className="flex flex-1 flex-col items-center justify-center gap-6 p-6 text-center">
-        <div className="space-y-1">
-          <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            Operador conectado
-          </p>
-          <h1 className="text-2xl font-semibold tracking-tight">{operador.nome}</h1>
-          <p className="text-sm text-muted-foreground">
-            As telas do operador (confirmar pagamento do QR) entram aqui.
-          </p>
-        </div>
+
+      <div className="flex items-center justify-between border-b border-border px-5 py-2.5">
+        <span className="text-sm font-medium">{operador.nome}</span>
         <Button
-          variant="outline"
+          variant="ghost"
+          size="sm"
           onClick={() => {
             sair();
             router.replace("/");
           }}
         >
-          Sair
+          <LogOut className="size-4" aria-hidden /> Sair
         </Button>
+      </div>
+
+      <nav className="flex gap-1 border-b border-border px-3" aria-label="Seções do painel">
+        {ABAS.map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setAba(id)}
+            className={`flex items-center gap-1.5 border-b-2 px-3 py-3 text-sm font-medium transition-colors ${
+              aba === id
+                ? "border-brand text-brand"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+            aria-current={aba === id ? "page" : undefined}
+          >
+            <Icon className="size-4" aria-hidden /> {label}
+          </button>
+        ))}
+      </nav>
+
+      <main className="flex-1">
+        {aba === "abastecimento" ? (
+          <PainelAbastecimento />
+        ) : (
+          <EmBreve titulo={ABAS.find((a) => a.id === aba)?.label ?? ""} />
+        )}
       </main>
+    </div>
+  );
+}
+
+function EmBreve({ titulo }: { titulo: string }) {
+  return (
+    <div className="mx-auto flex w-full max-w-xl flex-col items-center gap-2 px-4 py-20 text-center">
+      <p className="text-sm font-medium">{titulo}</p>
+      <p className="text-sm text-muted-foreground">Em breve.</p>
     </div>
   );
 }
