@@ -30,14 +30,14 @@ export const CANAL_INFO: Record<
 > = {
   financeiro: {
     label: "Financeiro",
-    subtitulo: "Dúvidas sobre notas e reembolsos",
-    remetente: "FINANCEIRO",
+    subtitulo: "Notas fiscais, repasses e portal do posto",
+    remetente: "HORA ÚTIL",
     emoji: "💰",
   },
   ti: {
     label: "TI / Suporte",
-    subtitulo: "Problemas no sistema e acessos",
-    remetente: "TI",
+    subtitulo: "Problemas no sistema, login e QR",
+    remetente: "HORA ÚTIL",
     emoji: "🔧",
   },
 };
