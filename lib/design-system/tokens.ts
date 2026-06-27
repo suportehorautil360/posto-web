@@ -1,9 +1,9 @@
-/** posto-web — Design System Tokens (marca FleetFuel, paleta laranja do comboio). */
+/** posto-web — Design System Tokens (marca Hora Útil 360). */
 
 export const brand = {
-  name: "FleetFuel",
+  name: "Hora Útil 360",
   tagline: "Operador do Posto",
-  description: "Sistema do operador do posto — confirmação de pagamentos FleetFuel.",
+  description: "Portal do operador do posto — abastecimento, notas e suporte Hora Útil 360.",
 } as const;
 
 export const colors = {
