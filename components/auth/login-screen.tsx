@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Fuel } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -15,7 +16,7 @@ import { environmentLabel } from "@/lib/config/env";
 export function LoginScreen() {
   const router = useRouter();
   const { operador, hydrated, entrar } = useSession();
-  const [usuario, setUsuario] = useState("");
+  const [identificador, setIdentificador] = useState("");
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [verificando, setVerificando] = useState(false);
@@ -30,7 +31,7 @@ export function LoginScreen() {
     setErro("");
     setVerificando(true);
     try {
-      const { token, user } = await login(usuario, senha);
+      const { token, user } = await login(identificador, senha);
       entrar({
         usuario: user.usuario,
         nome: user.nome,
@@ -56,7 +57,7 @@ export function LoginScreen() {
           <div className="space-y-1">
             <h1 className="text-3xl font-semibold tracking-tight">Acesso Restrito</h1>
             <p className="text-sm text-muted-foreground">
-              Operador do Posto — insira suas credenciais
+              Operador do Posto — e-mail ou usuário e senha
             </p>
           </div>
         </div>
@@ -67,19 +68,19 @@ export function LoginScreen() {
         >
           <div className="space-y-2">
             <Label
-              htmlFor="usuario"
+              htmlFor="identificador"
               className="text-xs uppercase tracking-wider text-muted-foreground"
             >
-              Usuário
+              E-mail ou usuário
             </Label>
             <Input
-              id="usuario"
-              name="usuario"
+              id="identificador"
+              name="identificador"
               autoComplete="username"
-              placeholder="login do caixa"
+              placeholder="operador@posto.com.br"
               className="font-mono"
-              value={usuario}
-              onChange={(e) => setUsuario(e.target.value)}
+              value={identificador}
+              onChange={(e) => setIdentificador(e.target.value)}
               required
             />
           </div>
@@ -101,6 +102,14 @@ export function LoginScreen() {
               required
             />
           </div>
+          <div className="text-right">
+            <Link
+              href="/esqueci-senha"
+              className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            >
+              Esqueci minha senha
+            </Link>
+          </div>
           {erro ? (
             <p className="text-sm text-destructive" role="alert">
               {erro}
@@ -117,7 +126,7 @@ export function LoginScreen() {
         </form>
 
         <p className="mt-6 text-center text-xs text-muted-foreground/70">
-          v2.2 · {environmentLabel()}
+          v2.3 · {environmentLabel()}
         </p>
       </main>
     </div>
