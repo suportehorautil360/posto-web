@@ -1,10 +1,11 @@
 "use client";
 
-import { FileText, Fuel, LogOut, MessageSquare } from "lucide-react";
+import { FileText, Fuel, History, LogOut, MessageSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { AppHeader } from "@/components/auth/app-header";
+import { PainelHistorico } from "@/components/historico/painel-historico";
 import { PainelAbastecimento } from "@/components/fleetfuel/painel-abastecimento";
 import {
   PainelMensagens,
@@ -14,10 +15,11 @@ import { PainelNotas } from "@/components/notas/painel-notas";
 import { useSession } from "@/components/providers/session-provider";
 import { Button } from "@/components/ui/button";
 
-type Aba = "abastecimento" | "notas" | "mensagens";
+type Aba = "abastecimento" | "historico" | "notas" | "mensagens";
 
 const ABAS: { id: Aba; label: string; icon: typeof Fuel }[] = [
   { id: "abastecimento", label: "Abastecimento", icon: Fuel },
+  { id: "historico", label: "Histórico", icon: History },
   { id: "notas", label: "Notas Fiscais", icon: FileText },
   { id: "mensagens", label: "Mensagens", icon: MessageSquare },
 ];
@@ -80,6 +82,8 @@ export default function HomePage() {
       <main className="flex-1">
         {aba === "abastecimento" ? (
           <PainelAbastecimento />
+        ) : aba === "historico" ? (
+          <PainelHistorico />
         ) : aba === "notas" ? (
           <PainelNotas />
         ) : aba === "mensagens" ? (
