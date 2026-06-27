@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Fuel } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 
 import { AppHeader } from "@/components/auth/app-header";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,10 +36,8 @@ export function EsqueciSenhaScreen() {
     <div className="flex min-h-svh flex-col bg-background">
       <AppHeader />
       <main className="flex flex-1 flex-col items-center justify-center px-4 py-10">
-        <div className="mb-7 flex flex-col items-center gap-3 text-center">
-          <span className="flex size-14 items-center justify-center rounded-2xl bg-gradient-to-b from-brand to-brand/70 shadow-lg shadow-brand/25">
-            <Fuel className="size-7 text-brand-foreground" aria-hidden />
-          </span>
+        <div className="mb-7 flex flex-col items-center gap-4 text-center">
+          <BrandLogo size="lg" />
           <div className="space-y-1">
             <h1 className="text-2xl font-semibold tracking-tight">Esqueci minha senha</h1>
             <p className="text-sm text-muted-foreground">

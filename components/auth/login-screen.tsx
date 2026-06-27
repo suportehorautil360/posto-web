@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Fuel } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { AppHeader } from "@/components/auth/app-header";
+import { BrandLogo } from "@/components/brand/brand-logo";
 import { useSession } from "@/components/providers/session-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,10 +50,8 @@ export function LoginScreen() {
     <div className="flex min-h-svh flex-col bg-background">
       <AppHeader />
       <main className="flex flex-1 flex-col items-center justify-center px-4 py-10">
-        <div className="mb-7 flex flex-col items-center gap-3 text-center">
-          <span className="flex size-14 items-center justify-center rounded-2xl bg-gradient-to-b from-brand to-brand/70 shadow-lg shadow-brand/25">
-            <Fuel className="size-7 text-brand-foreground" aria-hidden />
-          </span>
+        <div className="mb-7 flex flex-col items-center gap-4 text-center">
+          <BrandLogo size="lg" priority />
           <div className="space-y-1">
             <h1 className="text-3xl font-semibold tracking-tight">Acesso Restrito</h1>
             <p className="text-sm text-muted-foreground">
