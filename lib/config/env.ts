@@ -9,8 +9,9 @@ export const APP_ENV: AppEnv =
 
 export const isDemo = APP_ENV === "demo";
 
-export const API_URL =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://localhost:3000";
+import { resolveApiUrl } from "./api-url";
+
+export const API_URL = resolveApiUrl();
 
 export function environmentLabel(env: string = APP_ENV): string {
   switch (env) {
