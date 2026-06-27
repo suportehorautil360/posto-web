@@ -3,7 +3,6 @@
 import {
   AlertTriangle,
   ChevronRight,
-  FileSpreadsheet,
   FileText,
   History,
   Loader2,
@@ -20,10 +19,7 @@ import {
   fimMesAtual,
   inicioMesAtual,
 } from "@/features/abastecimentos/dates";
-import {
-  exportarHistoricoExcel,
-  exportarHistoricoPdf,
-} from "@/features/abastecimentos/export";
+import { exportarHistoricoPdf } from "@/features/abastecimentos/export";
 import { formatBRL, formatLitros } from "@/features/fleetfuel/format";
 import type { AbastecimentoHistorico } from "@/features/abastecimentos/types";
 import { ApiError } from "@/lib/api/client";
@@ -140,7 +136,7 @@ export function PainelHistorico() {
     setExportFim(fim);
   };
 
-  const exportar = async (tipo: "excel" | "pdf") => {
+  const exportarPdf = async () => {
     if (!postoId) return;
     setErro("");
     try {
@@ -152,14 +148,12 @@ export function PainelHistorico() {
         setErro("Nenhum abastecimento no período selecionado para exportar.");
         return;
       }
-      const opts = {
+      exportarHistoricoPdf(dados, {
         postoId,
         postoNome,
         inicio: exportInicio,
         fim: exportFim,
-      };
-      if (tipo === "excel") exportarHistoricoExcel(dados, opts);
-      else exportarHistoricoPdf(dados, opts);
+      });
     } catch (err) {
       setErro(mensagemErro(err));
     }
@@ -280,28 +274,16 @@ export function PainelHistorico() {
             />
           </label>
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Button
-            type="button"
-            variant="outline"
-            className="flex-1"
-            disabled={semPosto}
-            onClick={() => void exportar("excel")}
-          >
-            <FileSpreadsheet className="size-4" aria-hidden />
-            Excel
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="flex-1"
-            disabled={semPosto}
-            onClick={() => void exportar("pdf")}
-          >
-            <FileText className="size-4" aria-hidden />
-            PDF
-          </Button>
-        </div>
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          disabled={semPosto}
+          onClick={() => void exportarPdf()}
+        >
+          <FileText className="size-4" aria-hidden />
+          Exportar PDF
+        </Button>
       </section>
 
       {erro ? (
