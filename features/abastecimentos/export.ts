@@ -1,26 +1,7 @@
 import { formatBRL } from "@/features/fleetfuel/format";
-import {
-  downloadPlanilhaEstilizada,
-  esc,
-  imprimirHtmlRelatorio,
-  type ColunaPlanilha,
-} from "@/lib/export/spreadsheet";
+import { esc, imprimirHtmlRelatorio } from "@/lib/export/spreadsheet";
 
 import type { AbastecimentoHistorico } from "./types";
-
-const COLUNAS: ColunaPlanilha[] = [
-  { titulo: "Data", largura: 100 },
-  { titulo: "Hora", largura: 70, alinhamento: "center" },
-  { titulo: "Placa", largura: 100 },
-  { titulo: "Veículo", largura: 180 },
-  { titulo: "Motorista", largura: 160 },
-  { titulo: "Combustível", largura: 110 },
-  { titulo: "Litros", largura: 80, alinhamento: "right" },
-  { titulo: "R$/L", largura: 80, alinhamento: "right" },
-  { titulo: "Total", largura: 100, alinhamento: "right" },
-  { titulo: "Leitura", largura: 100 },
-  { titulo: "Local", largura: 160 },
-];
 
 function formatPreco(v: number | null): string {
   if (v === null) return "—";
@@ -28,43 +9,6 @@ function formatPreco(v: number | null): string {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
-}
-
-function linha(item: AbastecimentoHistorico): string[] {
-  return [
-    item.data,
-    item.hora,
-    item.placa,
-    item.veiculo,
-    item.motorista,
-    item.combustivel,
-    item.litros.toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 }),
-    formatPreco(item.precoLitro),
-    item.valor === null ? "—" : formatBRL(item.valor),
-    item.leitura,
-    item.local,
-  ];
-}
-
-export function nomeArquivoHistorico(
-  postoId: string,
-  inicio: string,
-  fim: string,
-  ext: "xls" | "pdf",
-): string {
-  return `historico-abastecimentos_${postoId}_${inicio}_${fim}.${ext}`;
-}
-
-export function exportarHistoricoExcel(
-  itens: AbastecimentoHistorico[],
-  opts: { postoId: string; postoNome: string; inicio: string; fim: string },
-): void {
-  downloadPlanilhaEstilizada(
-    nomeArquivoHistorico(opts.postoId, opts.inicio, opts.fim, "xls"),
-    COLUNAS,
-    itens.map(linha),
-    "Abastecimentos",
-  );
 }
 
 export function exportarHistoricoPdf(
