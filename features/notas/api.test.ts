@@ -24,7 +24,7 @@ describe("enviarNota", () => {
     const file = new File([new Uint8Array([1, 2, 3])], "nota.pdf", {
       type: "application/pdf",
     });
-    const r = await enviarNota("p1", "pref-1", file);
+    const r = await enviarNota("p1", "pref-1", file, 1250);
 
     expect(r).toEqual(nota);
 
@@ -35,6 +35,7 @@ describe("enviarNota", () => {
     expect(form).toBeInstanceOf(FormData);
     expect((form.get("file") as File).name).toBe("nota.pdf");
     expect(form.get("prefeituraId")).toBe("pref-1");
+    expect(form.get("value")).toBe("1250");
     // multipart: o client não deve fixar Content-Type (o browser põe o boundary).
     expect((init.headers as Record<string, string>)["Content-Type"]).toBeUndefined();
   });
@@ -44,7 +45,7 @@ describe("enviarNota", () => {
     const file = new File([new Uint8Array([1])], "n.pdf", {
       type: "application/pdf",
     });
-    await expect(enviarNota("p1", "pref-1", file)).rejects.toThrow(
+    await expect(enviarNota("p1", "pref-1", file, 100)).rejects.toThrow(
       "Esta nota fiscal já foi enviada.",
     );
   });
