@@ -13,25 +13,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "@/components/providers/session-provider";
 import { Input } from "@/components/ui/input";
 import { enviarNota, listarNotas } from "@/features/notas/api";
-import {
-  documentoLabel,
-  STATUS_LABEL,
-  type NotaFiscal,
-  type NotaStatus,
-} from "@/features/notas/types";
-import { formatBRL } from "@/features/fleetfuel/format";
+import { documentoLabel, type NotaFiscal } from "@/features/notas/types";
+import { formatBRL, parseDecimal } from "@/features/fleetfuel/format";
 import { ApiError } from "@/lib/api/client";
 
 const MAX_PDF_BYTES = 10 * 1024 * 1024;
-
-type Filtro = "todas" | NotaStatus;
-
-const FILTROS: { id: Filtro; label: string }[] = [
-  { id: "todas", label: "Todas" },
-  { id: "aprovada", label: "Aprovadas" },
-  { id: "pendente", label: "Pendentes" },
-  { id: "rejeitada", label: "Rejeitadas" },
-];
 
 function noMesAtual(iso: string): boolean {
   const d = new Date(iso);
@@ -59,9 +45,8 @@ export function PainelNotas() {
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState("");
   const [busca, setBusca] = useState("");
-  const [filtro, setFiltro] = useState<Filtro>("todas");
+  const [valorNota, setValorNota] = useState("");
 
-  // Recarrega a lista sem mexer no "carregando" global (usado após enviar).
   const recarregar = useCallback(async () => {
     if (!postoId) return;
     try {
@@ -99,6 +84,11 @@ export function PainelNotas() {
   const enviar = useCallback(
     async (file: File) => {
       setErro("");
+      const valor = parseDecimal(valorNota);
+      if (!Number.isFinite(valor) || valor <= 0) {
+        setErro("Informe o valor total da nota (R$).");
+        return;
+      }
       const ehPdf =
         file.type === "application/pdf" ||
         file.name.toLowerCase().endsWith(".pdf");
@@ -112,7 +102,8 @@ export function PainelNotas() {
       }
       setEnviando(true);
       try {
-        await enviarNota(postoId, prefeituraId, file);
+        await enviarNota(postoId, prefeituraId, file, valor);
+        setValorNota("");
         await recarregar();
       } catch (err) {
         setErro(mensagemErro(err));
@@ -120,30 +111,24 @@ export function PainelNotas() {
         setEnviando(false);
       }
     },
-    [postoId, prefeituraId, recarregar],
+    [postoId, prefeituraId, recarregar, valorNota],
   );
 
-  const totais = useMemo(() => {
+  const totalMes = useMemo(() => {
     const doMes = notas.filter((n) => noMesAtual(n.issuedAt || n.createdAt));
-    const total = doMes.reduce((s, n) => s + (n.value || 0), 0);
-    const aprovadas = doMes
-      .filter((n) => n.status === "aprovada")
-      .reduce((s, n) => s + (n.value || 0), 0);
-    const pendentes = doMes.filter((n) => n.status === "pendente").length;
-    return { total, aprovadas, pendentes };
+    return doMes.reduce((s, n) => s + (n.value || 0), 0);
   }, [notas]);
 
   const lista = useMemo(() => {
     const q = busca.trim().toLowerCase();
-    return notas.filter((n) => {
-      if (filtro !== "todas" && n.status !== filtro) return false;
-      if (!q) return true;
-      return [n.number, n.issuerName, n.description, n.accessKey]
+    if (!q) return notas;
+    return notas.filter((n) =>
+      [n.number, n.issuerName, n.description, n.accessKey]
         .join(" ")
         .toLowerCase()
-        .includes(q);
-    });
-  }, [notas, busca, filtro]);
+        .includes(q),
+    );
+  }, [notas, busca]);
 
   return (
     <div className="mx-auto w-full max-w-xl space-y-5 px-4 py-8">
@@ -161,13 +146,15 @@ export function PainelNotas() {
         />
       ) : null}
 
-      <div className="grid grid-cols-3 gap-3">
-        <Kpi rotulo="Total no mês" valor={formatBRL(totais.total)} />
-        <Kpi rotulo="Aprovadas" valor={formatBRL(totais.aprovadas)} tom="success" />
-        <Kpi rotulo="Pendentes" valor={String(totais.pendentes)} tom="warning" />
-      </div>
+      <Kpi rotulo="Total no mês" valor={formatBRL(totalMes)} />
 
-      <Dropzone enviando={enviando} disabled={semPosto} onArquivo={enviar} />
+      <Dropzone
+        enviando={enviando}
+        disabled={semPosto}
+        valorNota={valorNota}
+        onValorNotaChange={setValorNota}
+        onArquivo={enviar}
+      />
 
       {erro ? (
         <p className="text-sm text-destructive" role="alert">
@@ -180,32 +167,18 @@ export function PainelNotas() {
           Notas lançadas
         </h2>
 
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Search
-              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-              aria-hidden
-            />
-            <Input
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-              placeholder="Buscar nota…"
-              className="pl-9"
-              aria-label="Buscar nota"
-            />
-          </div>
-          <select
-            value={filtro}
-            onChange={(e) => setFiltro(e.target.value as Filtro)}
-            aria-label="Filtrar por status"
-            className="flex h-9 rounded-lg border border-border bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            {FILTROS.map((f) => (
-              <option key={f.id} value={f.id}>
-                {f.label}
-              </option>
-            ))}
-          </select>
+        <div className="relative">
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden
+          />
+          <Input
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            placeholder="Buscar nota…"
+            className="pl-9"
+            aria-label="Buscar nota"
+          />
         </div>
 
         {carregando ? (
@@ -216,7 +189,7 @@ export function PainelNotas() {
           <p className="py-8 text-center text-sm text-muted-foreground">
             {notas.length === 0
               ? "Nenhuma nota enviada ainda."
-              : "Nenhuma nota encontrada com esse filtro."}
+              : "Nenhuma nota encontrada com essa busca."}
           </p>
         ) : (
           <ul className="space-y-2">
@@ -232,23 +205,13 @@ export function PainelNotas() {
 
 // ---------------------------------------------------------------------------
 
-function Kpi({
-  rotulo,
-  valor,
-  tom,
-}: {
-  rotulo: string;
-  valor: string;
-  tom?: "success" | "warning";
-}) {
-  const cor =
-    tom === "success" ? "text-success" : tom === "warning" ? "text-warning" : "";
+function Kpi({ rotulo, valor }: { rotulo: string; valor: string }) {
   return (
     <div className="rounded-xl bg-card p-3 ring-1 ring-foreground/10">
       <p className="text-[0.65rem] font-medium uppercase tracking-wider text-muted-foreground">
         {rotulo}
       </p>
-      <p className={`mt-1 text-lg font-semibold tabular-nums ${cor}`}>{valor}</p>
+      <p className="mt-1 text-lg font-semibold tabular-nums">{valor}</p>
     </div>
   );
 }
@@ -256,17 +219,21 @@ function Kpi({
 function Dropzone({
   enviando,
   disabled,
+  valorNota,
+  onValorNotaChange,
   onArquivo,
 }: {
   enviando: boolean;
   disabled: boolean;
+  valorNota: string;
+  onValorNotaChange: (valor: string) => void;
   onArquivo: (file: File) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [arrastando, setArrastando] = useState(false);
 
   return (
-    <div className="space-y-2 rounded-2xl bg-card p-5 ring-1 ring-foreground/10">
+    <div className="space-y-3 rounded-2xl bg-card p-5 ring-1 ring-foreground/10">
       <div className="flex items-center gap-2">
         <UploadCloud className="size-4 text-brand" aria-hidden />
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -277,6 +244,24 @@ function Dropzone({
         Aceita apenas o PDF da nota emitida no site da SEFAZ — DANFE (NF-e mod. 55)
         ou Cupom (NFC-e mod. 65). Somente notas de combustível são aceitas.
       </p>
+
+      <div className="space-y-1.5">
+        <label
+          htmlFor="valor-nota"
+          className="text-xs font-medium text-muted-foreground"
+        >
+          Valor da nota (R$)
+        </label>
+        <Input
+          id="valor-nota"
+          inputMode="decimal"
+          placeholder="Ex.: 180,00"
+          value={valorNota}
+          onChange={(e) => onValorNotaChange(e.target.value)}
+          disabled={disabled || enviando}
+          aria-label="Valor da nota em reais"
+        />
+      </div>
 
       <button
         type="button"
@@ -302,7 +287,7 @@ function Dropzone({
         {enviando ? (
           <>
             <Loader2 className="size-7 animate-spin text-brand" aria-hidden />
-            <span className="text-sm font-medium text-brand">Lendo o PDF…</span>
+            <span className="text-sm font-medium text-brand">Enviando…</span>
           </>
         ) : (
           <>
@@ -333,7 +318,6 @@ function Dropzone({
 }
 
 function ItemNota({ nota }: { nota: NotaFiscal }) {
-  const revisar = nota.parseCompleteness === "parcial";
   return (
     <li className="rounded-xl bg-card p-4 ring-1 ring-foreground/10">
       <div className="flex items-start justify-between gap-3">
@@ -354,8 +338,6 @@ function ItemNota({ nota }: { nota: NotaFiscal }) {
           ) : null}
           <div className="flex flex-wrap items-center gap-1.5 pt-1">
             <Etiqueta texto="Combustível" />
-            <BadgeStatus status={nota.status} />
-            {revisar ? <Etiqueta texto="Revisar" tom="warning" /> : null}
           </div>
         </div>
         <div className="shrink-0 text-right">
@@ -377,32 +359,10 @@ function ItemNota({ nota }: { nota: NotaFiscal }) {
   );
 }
 
-function Etiqueta({ texto, tom }: { texto: string; tom?: "warning" }) {
-  const cls =
-    tom === "warning"
-      ? "bg-warning/15 text-warning"
-      : "bg-muted text-muted-foreground";
+function Etiqueta({ texto }: { texto: string }) {
   return (
-    <span
-      className={`rounded-full px-2 py-0.5 text-[0.65rem] font-medium uppercase tracking-wider ${cls}`}
-    >
+    <span className="rounded-full bg-muted px-2 py-0.5 text-[0.65rem] font-medium uppercase tracking-wider text-muted-foreground">
       {texto}
-    </span>
-  );
-}
-
-function BadgeStatus({ status }: { status: NotaStatus }) {
-  const cls =
-    status === "aprovada"
-      ? "bg-success/15 text-success"
-      : status === "rejeitada"
-        ? "bg-destructive/15 text-destructive"
-        : "bg-warning/15 text-warning";
-  return (
-    <span
-      className={`rounded-full px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wider ${cls}`}
-    >
-      {STATUS_LABEL[status]}
     </span>
   );
 }

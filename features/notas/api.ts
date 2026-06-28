@@ -8,9 +8,11 @@ export async function enviarNota(
   postoId: string,
   prefeituraId: string,
   file: File,
+  valor: number,
 ): Promise<NotaFiscal> {
   const form = new FormData();
   form.append("file", file);
+  form.append("value", String(valor));
   if (prefeituraId) form.append("prefeituraId", prefeituraId);
   const r = await api.upload<{ data: NotaFiscal }>(
     `/notas-fiscais/posto/${encodeURIComponent(postoId)}`,
