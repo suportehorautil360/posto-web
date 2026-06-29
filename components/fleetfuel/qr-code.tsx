@@ -1,7 +1,7 @@
 "use client";
 
 import QRCode from "qrcode";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface QrCodeProps {
   value: string;
@@ -9,27 +9,31 @@ interface QrCodeProps {
   className?: string;
 }
 
-/** Renderiza um QR a partir de `value` (data URL gerada no cliente). */
-export function QrCode({ value, size = 240, className }: QrCodeProps) {
-  const [src, setSrc] = useState<string | null>(null);
+/** Renderiza QR nítido (canvas 2× + quiet zone) para leitura rápida no celular. */
+export function QrCode({ value, size = 320, className }: QrCodeProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [erro, setErro] = useState(false);
 
   useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
     let ativo = true;
-    QRCode.toDataURL(value, {
-      width: size,
-      margin: 1,
-      errorCorrectionLevel: "M",
-      color: { dark: "#0a0a0a", light: "#ffffff" },
+    const pixelSize = Math.round(size * 2);
+
+    QRCode.toCanvas(canvas, value, {
+      width: pixelSize,
+      margin: 2,
+      errorCorrectionLevel: "L",
+      color: { dark: "#000000", light: "#ffffff" },
     })
-      .then((url) => {
-        if (!ativo) return;
-        setSrc(url);
-        setErro(false);
+      .then(() => {
+        if (ativo) setErro(false);
       })
       .catch(() => {
         if (ativo) setErro(true);
       });
+
     return () => {
       ativo = false;
     };
@@ -48,19 +52,20 @@ export function QrCode({ value, size = 240, className }: QrCodeProps) {
 
   return (
     <div
-      className={className}
-      style={{ width: size, height: size }}
+      className={`rounded-xl bg-white p-3 shadow-sm ring-1 ring-foreground/10 ${className ?? ""}`}
+      style={{ width: size + 24, height: size + 24 }}
       aria-label="QR Code do abastecimento"
     >
-      {src ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt="QR Code do abastecimento" width={size} height={size} className="rounded-xl" />
-      ) : (
-        <div
-          className="animate-pulse rounded-xl bg-muted"
-          style={{ width: size, height: size }}
-        />
-      )}
+      <canvas
+        ref={canvasRef}
+        aria-hidden
+        className="block"
+        style={{
+          width: size,
+          height: size,
+          imageRendering: "pixelated",
+        }}
+      />
     </div>
   );
 }
