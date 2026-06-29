@@ -11,8 +11,8 @@ export function formatBRL(valor: number | null | undefined): string {
 export function formatLitros(litros: number | null | undefined): string {
   const n = Number(litros);
   return `${(Number.isFinite(n) ? n : 0).toLocaleString("pt-BR", {
-    minimumFractionDigits: 3,
-    maximumFractionDigits: 3,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   })} L`;
 }
 
