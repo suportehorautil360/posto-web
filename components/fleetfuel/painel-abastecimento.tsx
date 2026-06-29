@@ -484,7 +484,7 @@ function EtapaComprovante(props: { intencao: IntencaoResult; onNovo: () => void 
             Motorista escaneia para validar
           </p>
           <div className="flex justify-center">
-            <QrCode value={intencao.qrConteudo} size={320} />
+            <QrCode value={intencao.qrConteudo} />
           </div>
           <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
             <Loader2 className="size-3.5 animate-spin" aria-hidden /> Aguardando validação do
