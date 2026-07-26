@@ -40,7 +40,7 @@ describe("listarHistoricoPosto", () => {
     const [url] = fn.mock.calls[0] as unknown as [string];
     expect(url).toContain("/abastecimentos/posto/posto-1");
     expect(url).toContain("startDate=2026-06-01");
-    expect(url).toContain("endDate=2026-07-01");
+    expect(url).toContain("endDate=2026-06-30");
   });
 
   it("retorna [] quando a resposta não traz data", async () => {

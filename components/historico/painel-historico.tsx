@@ -317,7 +317,9 @@ export function PainelHistorico() {
           </div>
         ) : filtrados.length === 0 ? (
           <p className="py-12 text-center text-sm text-muted-foreground">
-            Nenhum abastecimento neste período.
+            {lista.length === 0
+              ? "Nenhum abastecimento neste período. Amplie as datas ou confira se o postoId do login está correto."
+              : "Nenhum registro corresponde à busca."}
           </p>
         ) : (
           <ul className="space-y-2">

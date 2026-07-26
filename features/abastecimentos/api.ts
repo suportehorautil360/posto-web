@@ -1,7 +1,6 @@
 /** Histórico de abastecimentos do posto — GET /abastecimentos/posto/:postoId */
 import { api } from "@/lib/api/client";
 
-import { addDaysIso } from "./dates";
 import type { AbastecimentoHistorico } from "./types";
 
 interface AbastecimentoApi {
@@ -82,8 +81,10 @@ export async function listarHistoricoPosto(
   inicio: string,
   fimInclusive: string,
 ): Promise<AbastecimentoHistorico[]> {
-  const endDateApi = addDaysIso(fimInclusive, 1);
-  const qs = new URLSearchParams({ startDate: inicio, endDate: endDateApi });
+  const qs = new URLSearchParams({
+    startDate: inicio,
+    endDate: fimInclusive,
+  });
   const r = await api.get<{ data: AbastecimentoApi[] }>(
     `/abastecimentos/posto/${encodeURIComponent(postoId)}?${qs}`,
   );
