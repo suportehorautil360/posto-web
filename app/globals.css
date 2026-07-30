@@ -183,3 +183,138 @@
     @apply border-l-2 border-primary bg-brand-muted text-foreground;
   }
 }
+
+/* Luzes do login — fora de @layer para o Tailwind não interferir */
+.login-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(72px);
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.login-orb--orange {
+  left: -6rem;
+  top: 18%;
+  width: 32rem;
+  height: 32rem;
+  background: rgb(249 115 22 / 0.32);
+  animation: login-orb-drift-a 9s ease-in-out infinite alternate;
+}
+
+.login-orb--sky {
+  right: -5rem;
+  bottom: -4rem;
+  width: 28rem;
+  height: 28rem;
+  background: rgb(56 189 248 / 0.22);
+  animation: login-orb-drift-b 11s ease-in-out infinite alternate;
+}
+
+.login-orb--amber {
+  top: 8%;
+  right: 22%;
+  width: 20rem;
+  height: 20rem;
+  background: rgb(251 191 36 / 0.2);
+  animation: login-orb-drift-c 7s ease-in-out infinite alternate;
+}
+
+.login-glow-pulse {
+  animation: login-glow-pulse 6s ease-in-out infinite alternate;
+}
+
+.login-ring {
+  position: absolute;
+  border-radius: 9999px;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  pointer-events: none;
+}
+
+.login-ring--a {
+  left: 8%;
+  top: 18%;
+  width: min(34rem, 46vw);
+  height: min(34rem, 46vw);
+  animation: login-ring-spin 28s linear infinite;
+}
+
+.login-ring--b {
+  right: 6%;
+  bottom: 8%;
+  width: min(26rem, 38vw);
+  height: min(26rem, 38vw);
+  border-color: rgb(249 115 22 / 0.18);
+  animation: login-ring-spin-rev 36s linear infinite;
+}
+
+@keyframes login-orb-drift-a {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.55;
+  }
+  100% {
+    transform: translate3d(22vw, -16vh, 0) scale(1.35);
+    opacity: 1;
+  }
+}
+
+@keyframes login-orb-drift-b {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.4;
+  }
+  100% {
+    transform: translate3d(-20vw, -22vh, 0) scale(1.4);
+    opacity: 0.95;
+  }
+}
+
+@keyframes login-orb-drift-c {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.85);
+    opacity: 0.35;
+  }
+  100% {
+    transform: translate3d(-14vw, 18vh, 0) scale(1.45);
+    opacity: 0.9;
+  }
+}
+
+@keyframes login-glow-pulse {
+  0% {
+    opacity: 0.45;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes login-ring-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes login-ring-spin-rev {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-orb--orange,
+  .login-orb--sky,
+  .login-orb--amber,
+  .login-glow-pulse,
+  .login-ring--a,
+  .login-ring--b {
+    animation: none !important;
+  }
+}

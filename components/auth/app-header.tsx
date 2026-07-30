@@ -25,7 +25,7 @@ function Relogio() {
 
 export function AppHeader() {
   return (
-    <header className="flex items-center justify-between border-b border-border px-5 py-3">
+    <header className="flex items-center justify-between border-b border-border/80 bg-background/70 px-5 py-3 backdrop-blur-md">
       <div className="flex items-center gap-2">
         <BrandLogo size="sm" />
         {APP_ENV !== "producao" ? (
